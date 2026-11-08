@@ -81,6 +81,8 @@ def main():
     ap.add_argument("--blur-regions", default="", help="비식별화: 'x1,y1,x2,y2;...' (정규화 좌표, 원본 프레임 기준)")
     ap.add_argument("--out", type=Path, default=REPO / "paper" / "figures" / "fig2_열화비교.png")
     ap.add_argument("--dpi", type=int, default=600)
+    ap.add_argument("--layout", choices=["wide", "column"], default="wide",
+                    help="wide: 2×5 (두 단 폭), column: 3×4 (한 단 폭, 행=열화 종류)")
     args = ap.parse_args()
 
     degrade, h264_video = load_pilot_functions()
@@ -125,22 +127,38 @@ def main():
     y0 = min(max(cy - ch / 2, 0), H - ch)
 
     set_korean_font()
-    fig, axes = plt.subplots(2, 5, figsize=(6.7, 1.95))
-    for ax, k in zip(axes.flat, ORDER):
+    if args.layout == "column":
+        # 한 단 폭: 행 = 열화 종류, 열 = 원본·1·2·3단계 (각 행 첫 칸은 같은 원본)
+        rows = [[0, 1, 2, 3], [0, 4, 5, 6], [0, 7, 8, 9]]
+        short = {0: "원본", 1: "1/2", 2: "1/4", 3: "1/8", 4: "CRF 37", 5: "CRF 42", 6: "CRF 47",
+                 7: "6 px", 8: "11 px", 9: "17 px"}
+        fig, axes = plt.subplots(3, 4, figsize=(3.3, 1.78))
+        cells = [(axes[r][c], k, f"{short[k]}  S={preds[k][2]:.2f}") for r, row in enumerate(rows) for c, k in enumerate(row)]
+        for r, name in enumerate(["해상도", "H.264", "블러"]):
+            axes[r][0].set_ylabel(name, fontsize=5.5, labelpad=1.5)
+        title_fs, lw, ms = 4.8, 0.6, 3.2
+    else:
+        fig, axes = plt.subplots(2, 5, figsize=(6.7, 1.95))
+        cells = [(ax, k, f"{CONDS[k][2]}  S={preds[k][2]:.2f}") for ax, k in zip(axes.flat, ORDER)]
+        title_fs, lw, ms = 5.5, 0.8, 4.5
+    for ax, k, title in cells:
         img = np.asarray(frames[k])
         ax.imshow(img)
         ax.set_xlim(x0, x0 + cw)
         ax.set_ylim(y0 + ch, y0)
         bx1, by1, bx2, by2 = (meta[c] for c in ("x1", "y1", "x2", "y2"))
         ax.add_patch(Rectangle((bx1 * W, by1 * H), (bx2 - bx1) * W, (by2 - by1) * H,
-                               fill=False, ec="#00e000", lw=0.8))
+                               fill=False, ec="#00e000", lw=lw))
         px, py, s = preds[k]
-        ax.plot(px * W, py * H, marker="x", color="#ff2020", ms=4.5, mew=1.1)
-        ax.set_title(f"{CONDS[k][2]}  S={s:.2f}", fontsize=5.5, pad=1.5)
+        ax.plot(px * W, py * H, marker="x", color="#ff2020", ms=ms, mew=lw + 0.3)
+        ax.set_title(title, fontsize=title_fs, pad=1.2)
         ax.set_xticks([]); ax.set_yticks([])
         for sp in ax.spines.values():
             sp.set_linewidth(0.3)
-    fig.subplots_adjust(left=0.005, right=0.995, top=0.93, bottom=0.01, wspace=0.03, hspace=0.16)
+    if args.layout == "column":
+        fig.subplots_adjust(left=0.045, right=0.998, top=0.95, bottom=0.005, wspace=0.03, hspace=0.2)
+    else:
+        fig.subplots_adjust(left=0.005, right=0.995, top=0.93, bottom=0.01, wspace=0.03, hspace=0.16)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=args.dpi)
     print(f"saved {args.out}  frame={fr}  size={W}x{H}  crop=({x0:.0f},{y0:.0f},{cw:.0f}x{ch:.0f})")
