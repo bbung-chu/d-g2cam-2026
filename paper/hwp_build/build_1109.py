@@ -304,6 +304,23 @@ def table4_diffs():
     return rows
 
 
+def drop_blank_runs(R, min_run=3):
+    """글자도 컨트롤도 없는 빈 문단이 min_run개 이상 이어진 곳을 지운다 (원본에 엔터로 띄운 자리)."""
+    tops = [k for k, r in enumerate(R) if r[0] == P_HDR and r[1] == 0]
+    blank = [all(R[j][0] not in (P_TXT, CTRL) for j in range(k + 1, span(R, k))) for k in tops]
+    cut, i = [], 0
+    while i < len(tops):
+        j = i
+        while j < len(tops) and blank[j]:
+            j += 1
+        if j - i >= min_run:
+            cut.append((tops[i], tops[j] if j < len(tops) else len(R), j - i))
+        i = max(j, i + 1)
+    for a, b, _ in reversed(cut):
+        del R[a:b]
+    return [n for _, _, n in cut]
+
+
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
@@ -313,6 +330,7 @@ def main():
     ap.add_argument('--fig2-width', type=float, default=1.0)
     ap.add_argument('--fig3-width', type=float, default=1.0)
     ap.add_argument('--drop-table4', action='store_true')
+    ap.add_argument('--trim-blank', action='store_true', help='엔터로 띄운 빈 문단 묶음(3개 이상 연속) 삭제')
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
@@ -403,6 +421,9 @@ def main():
                       [SEC42[0].replace('그림 3은 열화 단계별 평균 점수와 영상별 점수 변화를, 표 4는 원본 점수, 열화 점수, 차이, RPD를 나타낸다. '
                                         '표 4의 차이와 RPD는 반올림하기 전의 평균으로 계산하였으므로, 표에 적힌 값으로 다시 계산하면 0.1%p 안팎의 차이가 생길 수 있다. ',
                                         '그림 3은 열화 단계별 평균 점수와 95% 신뢰구간, 영상별 점수 변화를 나타낸다. RPD와 차이는 반올림하기 전의 평균으로 계산하였다. ')])
+
+    if args.trim_blank:
+        print('빈 문단 삭제:', drop_blank_runs(R))
 
     # ---- DocInfo: BinData 3, 4 추가
     bins = [k for k, r in enumerate(D) if r[0] == 18]
