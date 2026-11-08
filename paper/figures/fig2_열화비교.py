@@ -105,7 +105,7 @@ def main():
         h, w = a.shape[:2]
         for x1, y1, x2, y2 in blur_boxes:
             xa, xb, ya, yb = int(x1 * w), int(x2 * w), int(y1 * h), int(y2 * h)
-            a[ya:yb, xa:xb] = cv2.GaussianBlur(a[ya:yb, xa:xb], (0, 0), 8)
+            a[ya:yb, xa:xb] = cv2.GaussianBlur(a[ya:yb, xa:xb], (0, 0), 3)
         return Image.fromarray(a)
 
     frames, preds = [], []
