@@ -41,7 +41,11 @@ clean = load("clean")
 runs = {(k, l): load(f"{k}_{l}").loc[clean.index] for k, ls, *_ in KINDS for l in ls}
 
 # ---------- 그림 ----------
-plt.rcParams.update({"font.family": "Malgun Gothic", "font.size": 6.5, "axes.edgecolor": MUTED,
+from matplotlib import font_manager  # noqa: E402
+_have = {f.name for f in font_manager.fontManager.ttflist}
+KFONT = next((n for n in ("Malgun Gothic", "AppleGothic", "Apple SD Gothic Neo", "NanumGothic", "Noto Sans CJK KR")
+              if n in _have), "DejaVu Sans")  # Windows·macOS 어디서나 한글이 나오게
+plt.rcParams.update({"font.family": KFONT, "font.size": 6.5, "axes.edgecolor": MUTED,
                      "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
                      "axes.unicode_minus": False})
 fig, axes = plt.subplots(2, 2, figsize=(3.4, 3.6), dpi=600,
@@ -93,7 +97,7 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
     for p, d, c in zip(pos, data, colors):
         ax.scatter(p + jr.uniform(-0.2, 0.2, len(d)), d, s=1.2, color=c, alpha=0.55, lw=0, zorder=3)
         ax.scatter(p, d.mean(), s=7, marker="D", color="white", edgecolor=INK, lw=0.6, zorder=4)
-    ax.set_xticks(pos, xt, fontsize=5.4)
+    ax.set_xticks(pos, xt, fontsize=4.6 if KFONT != "Malgun Gothic" else 5.4)
     ax.set_ylim(-1.05, 1.05)
     ax.set_title(f"({'cd'[col]}) 영상별 {name.split()[-1]} 변화 (열화-원본)", fontsize=6.8, color=INK, pad=3)
     ax.grid(axis="y", color=GRID, lw=0.5); ax.set_axisbelow(True)

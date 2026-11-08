@@ -28,7 +28,7 @@ EXT = (1, 2, 3, 11, 12, 14, 15, 16, 17, 18, 21, 22, 23)
 # ---------------------------------------------------------------- 문장
 ABSTRACT = ("본 논문은 CCTV 영상 열화가 비전-언어 모델(Vision-Language Model, VLM)의 교통사고 시점 판별과 조건부 위치 추정에 미치는 영향을 분석하였다. "
             "ACCIDENT 벤치마크의 실제 CCTV 사고 영상 50개에 해상도 저하, H.264 압축, 모션 블러를 각각 3단계로 적용하고, Molmo-7B-D의 점수를 같은 영상의 원본과 짝지어 비교하였다. "
-            "원본 점수는 시점 0.375, 위치 0.655였으며, 95% 신뢰구간 기준으로 원본과 차이가 확인된 결과는 해상도 1/4의 위치 점수(상대 하락률 8.1%) 하나였다. "
+            "원본 점수는 시점 0.370, 위치 0.656이었으며, 95% 신뢰구간 기준으로 원본과 차이가 확인된 결과는 해상도 1/4의 위치 점수(상대 하락률 8.3%) 하나였다. "
             "나머지 조건에서는 영상별 점수 변화가 엇갈려 평균 차이가 작았다.")
 INTRO1 = ("도로 CCTV 영상에서 교통사고를 탐지하는 연구는 주로 객체 탐지 모델을 학습시키는 방식으로 진행되어 왔다[1]. "
           "최근에는 VLM에 질의하여 별도의 학습 없이 사고 발생 시점과 위치를 답하게 하는 방식이 제안되었다[2]. "
@@ -90,21 +90,21 @@ SEC33_OLD_TAIL = "조건 간 차이는 같은 영상의 원본·열화 결과를
 SEC33_NEW_TAIL = ("95% 신뢰구간은 같은 영상의 원본 결과와 열화 결과를 한 쌍으로 묶은 채 영상 50개를 복원 추출하는 부트스트랩을 2,000회 반복하고, "
                   "반복마다 계산한 RPD 분포의 2.5번째와 97.5번째 백분위로 구하였다. 신뢰구간이 0을 포함하지 않는 경우만 원본과 차이가 있다고 해석한다.")
 NOTE_T2 = "위치 점수의 σx, σy는 ACCIDENT 공식 코드와 같이 실제 영상 2,027개 사고 상자의 평균 너비와 높이(정규화 좌표 0.127, 0.119)이다."
-SEC41 = ("원본 영상 50개에서 Molmo-7B-D의 점수는 시점 0.375, 위치 0.655였다(표 3). "
+SEC41 = ("원본 영상 50개에서 Molmo-7B-D의 점수는 시점 0.370, 위치 0.656이었다(표 3). "
          "표 3의 ACCIDENT 보고값은 같은 모델과 공식 질의·채점 코드를 사용했지만 실제 영상 2,027개 전체에 대한 값이므로, 표본이 다른 참고 비교로만 제시한다. "
-         "원본에서 미검출 영상은 8개(16%)였다. 이 영상들이 공식 대체값으로 받은 점수는 평균 시점 점수에 0.030을 더하였으며, 미검출을 0점으로 처리하면 시점 점수는 0.345가 된다.")
+         "원본에서 미검출 영상은 8개(16%)였다. 이 영상들이 공식 대체값으로 받은 점수는 평균 시점 점수에 0.030을 더하였으며, 미검출을 0점으로 처리하면 시점 점수는 0.341이 된다.")
 NOTE_T3 = "ACCIDENT 보고값은 실제 영상 2,027개 전체 기준이며, 본 연구 값은 그중 50개 기준인 참고 비교이다."
 SEC42 = [
     ("그림 3은 열화 단계별 평균 점수와 영상별 점수 변화를, 표 4는 원본 점수, 열화 점수, 차이, RPD를 나타낸다. "
      "표 4의 차이와 RPD는 반올림하기 전의 평균으로 계산하였으므로, 표에 적힌 값으로 다시 계산하면 0.1%p 안팎의 차이가 생길 수 있다. "
      "그림 2는 한 영상의 정답 사고 프레임에 10개 조건을 적용한 예이다. 이 영상에서는 해상도 1/8과 CRF 42에서 예측 위치가 정답 영역을 벗어났다."),
-    ("95% 신뢰구간이 0을 포함하지 않은 결과는 해상도 1/4의 위치 점수(0.655 → 0.602, RPD 8.1%) 하나였다. "
+    ("95% 신뢰구간이 0을 포함하지 않은 결과는 해상도 1/4의 위치 점수(0.656 → 0.602, RPD 8.3%) 하나였다. "
      "나머지 17개 결과는 영상 50개에서 원본과의 차이를 확인할 수 없었다."),
-    ("평균만 보면 위치 점수는 9개 조건 중 8개에서 원본보다 0.015~0.053 낮았다. "
+    ("평균만 보면 위치 점수는 9개 조건 중 8개에서 원본보다 0.017~0.055 낮았다. "
      "시점 점수는 해상도 1/8(0.298)과 블러 17 px(0.325)에서 가장 낮았고, 같은 두 조건에서 미검출이 12개(24%)로 늘었다. "
-     "그러나 이 두 조건의 신뢰구간도 0을 포함한다. H.264 압축 조건의 시점 점수 평균은 CRF 47까지 원본과 0.015 이내였다."),
+     "그러나 이 두 조건의 신뢰구간도 0을 포함한다. H.264 압축 조건의 시점 점수 평균은 CRF 47까지 원본과 0.02 이내였다."),
     ("열화 단계가 강해져도 점수가 일정하게 낮아지지는 않았다. 예를 들어 해상도 1/4의 시점 점수는 1/2보다 높았다. "
-     "그림 3(c)를 보면 이 조건에서 시점 점수가 0.1 이상 오른 영상은 7개, 내린 영상은 9개로 증감이 상쇄되어 평균 변화가 작았다. "
+     "그림 3(c)를 보면 이 조건에서 시점 점수가 0.1 이상 오른 영상은 8개, 내린 영상은 9개로 증감이 상쇄되어 평균 변화가 작았다. "
      "영상별 점수는 0이나 1 근처에 몰려 있어, 한 영상의 판별 결과가 바뀌면 평균이 크게 움직인다. "
      "어떤 영상 특성이 이러한 증감을 만드는지는 이번 실험에서 확인하지 않았다."),
 ]
@@ -294,6 +294,46 @@ def add_table4_diffs(R, para_hdr, diffs):
         p = bytearray(R[k][2]); p[0:2] = S.pack('<H', 2); R[k][2] = bytes(p)
 
 
+def set_cells(R, para_hdr, want):
+    """표의 (row, col) 칸 글자를 lines(문단 목록)로 바꾼다. 첫 문단의 모양을 따른다."""
+    a, b = table_span(R, para_hdr)
+    for k, end, col, row in reversed(cells(R, a, b)):
+        if (row, col) not in want:
+            continue
+        lines = want[(row, col)]
+        h = k + 1
+        tmpl, cs, L = R[h][2], first_cs(R, h), R[h][1]
+        new = []
+        for n, s in enumerate(lines):
+            new += new_para(tmpl, s, cs, L, last=n == len(lines) - 1)
+        R[h:end] = new
+        p = bytearray(R[k][2]); p[0:2] = S.pack('<H', len(lines)); R[k][2] = bytes(p)
+
+
+def set_table4(R, para_hdr):
+    """표 4의 점수·차이·RPD·CI 칸을 results_n50/table4_compact.md 값으로 다시 쓴다 (원본 HWP의 옛 값 대체)."""
+    fix = lambda s: s.replace('-', '−')  # noqa: E731
+    rows = [[x.strip() for x in line.strip('|').split('|')]
+            for line in (REPO / "accident-pilot" / "results_n50" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]]
+    assert len(rows) == 9
+    split = lambda s: [fix(s.split(' [')[0]), fix('[' + s.split(' [')[1])]  # noqa: E731  "4.9 [-2.4, 14.6]"
+    want = {1: [[rows[0][2]], ['–'], [rows[0][6]], ['–']]}
+    for i, c in enumerate(rows):
+        want[i + 2] = [[c[3], f"({fix(c[4])})"], split(c[5]), [c[7], f"({fix(c[8])})"], split(c[9])]
+    a, b = table_span(R, para_hdr)
+    for k, end, col, row in reversed(cells(R, a, b)):
+        if row not in want or col == 0:
+            continue
+        lines = want[row][col - 1]
+        h = k + 1
+        tmpl, cs, L = R[h][2], first_cs(R, h), R[h][1]
+        new = []
+        for n, s in enumerate(lines):
+            new += new_para(tmpl, s, cs, L, last=n == len(lines) - 1)
+        R[h:end] = new
+        p = bytearray(R[k][2]); p[0:2] = S.pack('<H', len(lines)); R[k][2] = bytes(p)
+
+
 def table4_diffs():
     rows = []
     for line in (REPO / "accident-pilot" / "results_n50" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]:
@@ -373,7 +413,8 @@ def main():
     body_tmpl, body_cs = R[find(R, '본 연구의 전체 분석 절차는')][2], 3
     tbl_paras = table_paras(R)
     # 표 순서: 0 표1, 1 표2, 2 표3, 3 표4. 뒤에서부터 넣어야 앞 인덱스가 안 바뀐다
-    add_table4_diffs(R, tbl_paras[3], table4_diffs())
+    set_table4(R, tbl_paras[3])
+    set_cells(R, tbl_paras[2], {(3, 2): ['0.370'], (3, 3): ['0.656']})  # 표 3 본 연구 행 (A100 재실행)
     insert_after(R, tbl_paras[3], new_para(body_tmpl, '  ' + NOTE_T4, body_cs))
     insert_after(R, tbl_paras[2], new_para(body_tmpl, '  ' + NOTE_T3, body_cs))
     insert_after(R, tbl_paras[1], new_para(body_tmpl, '  ' + NOTE_T2, body_cs))
