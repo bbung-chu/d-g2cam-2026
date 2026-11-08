@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 .ipynb_checkpoints/
 uploads/
+
+# 영상은 커밋하지 않는다 (저작권·용량, 이슈 #3)
+*.mp4
