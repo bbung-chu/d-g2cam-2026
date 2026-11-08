@@ -50,7 +50,7 @@ REL22 = ("영상 열화가 AI 성능에 미치는 영향은 주로 객체 탐지
          "Poyser 등[8]은 행동 인식에서 압축이 강해질수록 움직임 정보를 쓰는 경로의 성능이 외형 정보를 쓰는 경로보다 크게 낮아짐을 보고하였다. "
          "이들 연구에서 확인된 것은 객체 탐지와 행동 인식에서의 영향이며, 같은 열화가 VLM의 사고 시점 판별과 조건부 위치 추정에 미치는 영향은 본 연구에서 측정한다.")
 EQ_TAIL = "본 연구는 식 (1)에 가정한 속도와 노출 시간을 넣어 모션 블러 길이를 정하였다(3.2절)."
-METHOD0 = ("본 연구의 전체 분석 절차는 (그림 1)과 같다. 실제 CCTV 사고 영상에 열화를 적용하고, "
+METHOD0 = ("본 연구의 전체 분석 절차는 그림 1과 같다. 실제 CCTV 사고 영상에 열화를 적용하고, "
            "각 조건에서 Molmo-7B-D의 시점 판별과 조건부 위치 추정 점수를 측정한 뒤 원본 대비 상대 하락률로 비교한다.")
 SEC31 = [
     ("실험 영상은 ACCIDENT의 실제 CCTV 영상 2,027개 전체를 난수 시드 0으로 섞은 뒤 앞에서부터 50개를 사용하였다. "
@@ -344,6 +344,96 @@ def table4_diffs():
     return rows
 
 
+NOTE_PREFIX = ('위치 점수의 σx', 'ACCIDENT 보고값은', '괄호 안은')
+GAP_PS, GAP_CS = 21, 22        # 양쪽 정렬 줄간격 100%, 한양신명조 7pt → 그림·표 앞뒤 작은 빈 줄
+NOTE_PS, NOTE_CS = 20, 4       # 왼쪽 정렬 130%(표 캡션과 같은 모양, 별도 번호), 한양중고딕 8pt → 표 아래 주석
+KEEP_NEXT_PS = (8, 12)         # 표 캡션, 그림·표·수식 문단: '다음 문단과 함께'(속성1 bit 17) → 캡션과 표·그림이 떨어지지 않게
+HEAD_PS = 13                   # 소제목 문단 모양 (4.1만 원본 양식에서 10이었음)
+
+
+def tidy_layout(R):
+    """그림·표·수식 앞뒤 빈 줄을 같은 규칙으로 맞춘다.
+    - 블록(그림+캡션, 표 캡션+표+주석, 수식) 앞뒤에 7pt 빈 줄 하나. 장 구분 빈 줄(ps 3) 옆에는 넣지 않는다.
+    - 그 밖의 본문 빈 줄은 지운다. 표 주석은 8pt 중고딕, 4.1 소제목은 다른 소제목과 같은 문단 모양.
+    """
+    def info(k):
+        e = span(R, k)
+        ps = S.unpack('<H', R[k][2][8:10])[0]
+        t = next((txt(R[j][2]) for j in range(k + 1, e) if R[j][0] == P_TXT and R[j][1] == 1), '')
+        ctrls = {R[j][2][:4][::-1] for j in range(k + 1, e) if R[j][0] == CTRL and R[j][1] == 1}
+        vis = t.replace('\x00', '').strip()
+        if b'gso ' in ctrls and not vis:
+            kind = 'pic'
+        elif b'tbl ' in ctrls and not vis:
+            kind = 'tbl'
+        elif ps == 12 and vis.endswith('(1)'):
+            kind = 'eq'
+        elif vis.startswith('(그림'):
+            kind = 'fcap'
+        elif vis.startswith('(표'):
+            kind = 'tcap'
+        elif vis.startswith(NOTE_PREFIX):
+            kind = 'note'
+        elif not vis and not ctrls:
+            kind = 'sec' if ps == 3 else 'blank'
+        else:
+            kind = 'text'
+        return kind, e, ps, vis
+
+    tops = [k for k, r in enumerate(R) if r[0] == P_HDR and r[1] == 0]
+    items = [(k,) + info(k) for k in tops[1:]]          # 0번은 제목 표
+    gap_src = next(k for k, kind, e, ps, vis in items if kind == 'blank')
+    g_end = span(R, gap_src)
+    gh = bytearray(R[gap_src][2]); gh[8:10] = S.pack('<H', GAP_PS); gh[16:18] = S.pack('<H', 0)
+    gh[0:4] = S.pack('<I', S.unpack('<I', gh[0:4])[0] & 0x7FFFFFFF)
+    gap = [[P_HDR, 0, bytes(gh)]] + [[r[0], r[1], S.pack('<II', 0, GAP_CS) if r[0] == P_CS else r[2]]
+                                     for r in R[gap_src + 1:g_end] if r[0] != 69]
+
+    # 블록 묶기
+    seq, i = [], 0
+    while i < len(items):
+        k, kind, e, ps, vis = items[i]
+        if kind == 'pic' and i + 1 < len(items) and items[i + 1][1] == 'fcap':
+            seq.append(('block', [items[i], items[i + 1]])); i += 2; continue
+        if kind == 'tcap' and i + 1 < len(items) and items[i + 1][1] == 'tbl':
+            blk = [items[i], items[i + 1]]; i += 2
+            if i < len(items) and items[i][1] == 'note':
+                blk.append(items[i]); i += 1
+            seq.append(('block', blk)); continue
+        if kind == 'eq':
+            seq.append(('block', [items[i]])); i += 1; continue
+        if kind != 'blank':
+            seq.append((kind, [items[i]]))
+        i += 1
+
+    out = [list(r) for r in R[:items[0][0]]]
+    prev = 'sec'
+    for n, (kind, its) in enumerate(seq):
+        if kind == 'block' and prev not in ('sec', 'gap'):
+            out += [list(r) for r in gap]
+        for k, knd, e, ps, vis in its:
+            recs_ = [list(r) for r in R[k:e]]
+            if knd == 'note':
+                h = bytearray(recs_[0][2]); h[8:10] = S.pack('<H', NOTE_PS); recs_[0][2] = bytes(h)
+                for r in recs_:
+                    if r[0] == P_CS and r[1] == 1:
+                        b = bytearray(r[2])
+                        for q in range(0, len(b), 8):
+                            b[q + 4:q + 8] = S.pack('<I', NOTE_CS)
+                        r[2] = bytes(b)
+            if knd == 'text' and ps == 10 and vis.startswith('4.1'):
+                h = bytearray(recs_[0][2]); h[8:10] = S.pack('<H', HEAD_PS); recs_[0][2] = bytes(h)
+            out += recs_
+        prev = kind
+        if kind == 'block':
+            nxt = seq[n + 1][0] if n + 1 < len(seq) else 'sec'
+            if nxt != 'sec':
+                out += [list(r) for r in gap]
+                prev = 'gap'
+    out += [list(r) for r in R[span(R, items[-1][0]):]]
+    R[:] = out
+
+
 def drop_blank_runs(R, min_run=3):
     """글자도 컨트롤도 없는 빈 문단이 min_run개 이상 이어진 곳을 지운다 (원본에 엔터로 띄운 자리)."""
     tops = [k for k, r in enumerate(R) if r[0] == P_HDR and r[1] == 0]
@@ -371,6 +461,7 @@ def main():
     ap.add_argument('--fig3-width', type=float, default=1.0)
     ap.add_argument('--drop-table4', action='store_true')
     ap.add_argument('--trim-blank', action='store_true', help='엔터로 띄운 빈 문단 묶음(3개 이상 연속) 삭제')
+    ap.add_argument('--tidy', action='store_true', help='그림·표·수식 앞뒤 빈 줄 규칙 통일, 표 주석 8pt')
     args = ap.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
 
@@ -465,6 +556,13 @@ def main():
 
     if args.trim_blank:
         print('빈 문단 삭제:', drop_blank_runs(R))
+    if args.tidy:
+        tidy_layout(R)
+
+    if args.tidy:
+        pss = [k for k, r in enumerate(D) if r[0] == 25]
+        for n in KEEP_NEXT_PS:
+            b = bytearray(D[pss[n]][2]); b[0:4] = S.pack('<I', S.unpack('<I', b[0:4])[0] | (1 << 17)); D[pss[n]][2] = bytes(b)
 
     # ---- DocInfo: BinData 3, 4 추가
     bins = [k for k, r in enumerate(D) if r[0] == 18]
