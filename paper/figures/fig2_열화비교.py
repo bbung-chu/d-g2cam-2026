@@ -64,7 +64,7 @@ def read_frame(path, i):
 
 
 def set_korean_font():
-    for name in ("AppleGothic", "Apple SD Gothic Neo", "NanumGothic", "Malgun Gothic", "Noto Sans CJK KR"):
+    for name in ("Malgun Gothic", "Apple SD Gothic Neo", "NanumGothic", "AppleGothic", "Noto Sans CJK KR"):
         if any(name == f.name for f in font_manager.fontManager.ttflist):
             plt.rcParams["font.family"] = name
             break
@@ -132,11 +132,12 @@ def main():
         rows = [[0, 1, 2, 3], [0, 4, 5, 6], [0, 7, 8, 9]]
         short = {0: "원본", 1: "1/2", 2: "1/4", 3: "1/8", 4: "CRF 37", 5: "CRF 42", 6: "CRF 47",
                  7: "6 px", 8: "11 px", 9: "17 px"}
-        fig, axes = plt.subplots(3, 4, figsize=(3.3, 1.78))
+        # 논문 실제 크기(한 단 폭 3.35 in), 글자 6.5 pt 이상. HWP에는 100%로 넣는다.
+        fig, axes = plt.subplots(3, 4, figsize=(3.35, 1.80))
         cells = [(axes[r][c], k, f"{short[k]}  S={preds[k][2]:.2f}") for r, row in enumerate(rows) for c, k in enumerate(row)]
         for r, name in enumerate(["해상도", "H.264", "블러"]):
-            axes[r][0].set_ylabel(name, fontsize=5.5, labelpad=1.5)
-        title_fs, lw, ms = 4.8, 0.6, 3.2
+            axes[r][0].set_ylabel(name, fontsize=7.0, labelpad=2, weight="bold")
+        title_fs, lw, ms = 6.5, 0.8, 4.2
     else:
         fig, axes = plt.subplots(2, 5, figsize=(6.7, 1.95))
         cells = [(ax, k, f"{CONDS[k][2]}  S={preds[k][2]:.2f}") for ax, k in zip(axes.flat, ORDER)]
@@ -156,7 +157,7 @@ def main():
         for sp in ax.spines.values():
             sp.set_linewidth(0.3)
     if args.layout == "column":
-        fig.subplots_adjust(left=0.045, right=0.998, top=0.95, bottom=0.005, wspace=0.03, hspace=0.2)
+        fig.subplots_adjust(left=0.06, right=0.998, top=0.945, bottom=0.005, wspace=0.03, hspace=0.27)
     else:
         fig.subplots_adjust(left=0.005, right=0.995, top=0.93, bottom=0.01, wspace=0.03, hspace=0.16)
     args.out.parent.mkdir(parents=True, exist_ok=True)

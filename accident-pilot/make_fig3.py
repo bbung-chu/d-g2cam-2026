@@ -43,13 +43,14 @@ runs = {(k, l): load(f"{k}_{l}").loc[clean.index] for k, ls, *_ in KINDS for l i
 # ---------- 그림 ----------
 from matplotlib import font_manager  # noqa: E402
 _have = {f.name for f in font_manager.fontManager.ttflist}
-KFONT = next((n for n in ("Malgun Gothic", "AppleGothic", "Apple SD Gothic Neo", "NanumGothic", "Noto Sans CJK KR")
+KFONT = next((n for n in ("Malgun Gothic", "Apple SD Gothic Neo", "NanumGothic", "AppleGothic", "Noto Sans CJK KR")
               if n in _have), "DejaVu Sans")  # Windows·macOS 어디서나 한글이 나오게
-plt.rcParams.update({"font.family": KFONT, "font.size": 6.5, "axes.edgecolor": MUTED,
+plt.rcParams.update({"font.family": KFONT, "font.size": 7.0, "xtick.labelsize": 6.8, "ytick.labelsize": 6.8, "axes.edgecolor": MUTED,
                      "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
                      "axes.unicode_minus": False})
-fig, axes = plt.subplots(2, 2, figsize=(3.4, 3.6), dpi=600,
-                         gridspec_kw=dict(height_ratios=[1, 1.05], hspace=0.62, wspace=0.32))
+# 논문에 들어가는 실제 크기(한 단 폭 3.35 in)로 그린다. HWP에는 100%로 넣는다.
+fig, axes = plt.subplots(2, 2, figsize=(3.35, 3.45), dpi=600,
+                         gridspec_kw=dict(height_ratios=[1, 1.05], hspace=0.55, wspace=0.34))
 rng = np.random.default_rng(SEED)
 for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("where", "공간 유사도 S")]):
     # (a)(b) 평균 ± 95% CI
@@ -68,10 +69,11 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
         xs = np.arange(4) + off
         ax.errorbar(xs[1:], ys[1:], yerr=[np.array(ys[1:]) - los[1:], np.array(his[1:]) - ys[1:]],
                     fmt="none", ecolor=color, elinewidth=0.7, capsize=1.5, zorder=2)
-        ax.plot(xs, ys, color=color, ls=style, lw=1.1, marker=marker, ms=3.2,
+        ax.plot(xs, ys, color=color, ls=style, lw=1.1, marker=marker, ms=3.6,
                 mec="white", mew=0.5, label=label, zorder=3)
-    ax.set_xticks(range(4), ["원본", "1단계", "2단계", "3단계"])
-    ax.set_title(f"({'ab'[col]}) {name} 평균", fontsize=6.8, color=INK, pad=3)
+    ax.set_xticks(range(4), ["원본", "1", "2", "3"])
+    ax.set_xlabel("열화 단계", fontsize=6.8, labelpad=1.5)
+    ax.set_title(f"({'ab'[col]}) {name} 평균", fontsize=7.2, color=INK, pad=3, weight="bold")
     ax.set_ylim(0.15, 0.85) if col == 0 else ax.set_ylim(0.40, 0.85)
     ax.grid(axis="y", color=GRID, lw=0.5); ax.set_axisbelow(True)
     for s in ("top", "right"):
@@ -83,7 +85,7 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
     for k, ls, label, color, style, marker, ticks in KINDS:
         for l, t in zip(ls, ticks):
             data.append((runs[(k, l)][metric] - clean[metric]).to_numpy())
-            colors.append(color); xt.append(t)
+            colors.append(color); xt.append(str(ls.index(l) + 1))
     pos = np.arange(len(data)) + np.repeat([0, 0.5, 1.0], 3)
     ax.axhline(0, color=MUTED, lw=0.8)
     bp = ax.boxplot(data, positions=pos, widths=0.6, whis=(5, 95), showfliers=False,
@@ -97,19 +99,19 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
     for p, d, c in zip(pos, data, colors):
         ax.scatter(p + jr.uniform(-0.2, 0.2, len(d)), d, s=1.2, color=c, alpha=0.55, lw=0, zorder=3)
         ax.scatter(p, d.mean(), s=7, marker="D", color="white", edgecolor=INK, lw=0.6, zorder=4)
-    ax.set_xticks(pos, xt, fontsize=4.6 if KFONT != "Malgun Gothic" else 5.4)
+    ax.set_xticks(pos, xt)
+    ax.set_xlabel("열화 단계", fontsize=6.8, labelpad=1.5)
     ax.set_ylim(-1.05, 1.05)
-    ax.set_title(f"({'cd'[col]}) 영상별 {name.split()[-1]} 변화 (열화-원본)", fontsize=6.8, color=INK, pad=3)
+    ax.set_title(f"({'cd'[col]}) 영상별 {name.split()[-1]} 변화", fontsize=7.2, color=INK, pad=3, weight="bold")
     ax.grid(axis="y", color=GRID, lw=0.5); ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
 
 h, lab = axes[0, 0].get_legend_handles_labels()
-fig.legend(h, lab, loc="upper center", ncol=3, frameon=False, fontsize=6.2,
-           bbox_to_anchor=(0.5, 1.0), handlelength=2.6)
-fig.text(0.5, 0.005, "(a)(b) 막대 = 95% CI, 회색 띠 = 원본 CI   (c)(d) 상자 = 사분위, 수염 = 5~95%, ◇ = 평균",
-         ha="center", va="bottom", fontsize=5.2, color=MUTED)
-fig.subplots_adjust(left=0.1, right=0.98, top=0.9, bottom=0.08)
+fig.legend(h, lab, loc="upper center", ncol=3, frameon=False, fontsize=7.0,
+           bbox_to_anchor=(0.5, 1.01), handlelength=2.4, columnspacing=1.2)
+# 막대·띠·상자 설명은 그림 안이 아니라 HWP 캡션에 쓴다 (글자를 키우기 위해).
+fig.subplots_adjust(left=0.115, right=0.985, top=0.905, bottom=0.095)
 fig.savefig(FIG, dpi=600)
 
 # ---------- 미검출 영향 표 ----------
