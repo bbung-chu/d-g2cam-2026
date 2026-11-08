@@ -1,2 +1,3 @@
-# 제출 zip(git archive)에서 뺄 팀 내부 메모
+# 제출 zip(git archive)에서 뺄 팀 내부 메모와 이 설정 파일
 팀메모 export-ignore
+.gitattributes export-ignore
