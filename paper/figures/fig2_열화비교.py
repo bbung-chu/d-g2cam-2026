@@ -137,7 +137,7 @@ def main():
         cells = [(axes[r][c], k, f"{short[k]}  S={preds[k][2]:.2f}") for r, row in enumerate(rows) for c, k in enumerate(row)]
         for r, name in enumerate(["해상도", "H.264", "블러"]):
             axes[r][0].set_ylabel(name, fontsize=7.0, labelpad=2, weight="bold")
-        title_fs, lw, ms = 6.5, 0.8, 4.2
+        title_fs, lw, ms = 6.6, 1.0, 4.4
     else:
         fig, axes = plt.subplots(2, 5, figsize=(6.7, 1.95))
         cells = [(ax, k, f"{CONDS[k][2]}  S={preds[k][2]:.2f}") for ax, k in zip(axes.flat, ORDER)]
@@ -152,10 +152,10 @@ def main():
                                fill=False, ec="#00e000", lw=lw))
         px, py, s = preds[k]
         ax.plot(px * W, py * H, marker="x", color="#ff2020", ms=ms, mew=lw + 0.3)
-        ax.set_title(title, fontsize=title_fs, pad=1.2)
+        ax.set_title(title, fontsize=title_fs, pad=1.2, weight="medium", color="#000000")
         ax.set_xticks([]); ax.set_yticks([])
         for sp in ax.spines.values():
-            sp.set_linewidth(0.3)
+            sp.set_linewidth(0.6)
     if args.layout == "column":
         fig.subplots_adjust(left=0.06, right=0.998, top=0.945, bottom=0.005, wspace=0.03, hspace=0.27)
     else:

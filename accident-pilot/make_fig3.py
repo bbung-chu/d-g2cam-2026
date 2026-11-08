@@ -24,7 +24,7 @@ N_BOOT, SEED = 2000, 0
 KINDS = [("resize", ["2", "4", "8"], "해상도 저하", "#2a78d6", "-", "o", ["1/2", "1/4", "1/8"]),
          ("h264", ["37", "42", "47"], "H.264 압축", "#eb6834", "--", "s", ["37", "42", "47"]),
          ("blur", ["6", "11", "17"], "모션 블러", "#1baf7a", ":", "^", ["6", "11", "17"])]
-INK, MUTED, GRID = "#222222", "#6b6b6b", "#e6e6e6"
+INK, MUTED, GRID = "#000000", "#333333", "#dddddd"  # 화면에서 줄여도 흐려지지 않게 진하게
 
 
 def load(tag):
@@ -45,7 +45,8 @@ from matplotlib import font_manager  # noqa: E402
 _have = {f.name for f in font_manager.fontManager.ttflist}
 KFONT = next((n for n in ("Malgun Gothic", "Apple SD Gothic Neo", "NanumGothic", "AppleGothic", "Noto Sans CJK KR")
               if n in _have), "DejaVu Sans")  # Windows·macOS 어디서나 한글이 나오게
-plt.rcParams.update({"font.family": KFONT, "font.size": 7.0, "xtick.labelsize": 6.8, "ytick.labelsize": 6.8, "axes.edgecolor": MUTED,
+plt.rcParams.update({"font.family": KFONT, "font.size": 7.0, "font.weight": "medium", "axes.linewidth": 0.9,
+                     "xtick.major.width": 0.9, "ytick.major.width": 0.9, "xtick.labelsize": 6.8, "ytick.labelsize": 6.8, "axes.edgecolor": MUTED,
                      "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
                      "axes.unicode_minus": False})
 # 논문에 들어가는 실제 크기(한 단 폭 3.35 in)로 그린다. HWP에는 100%로 넣는다.
@@ -58,7 +59,7 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
     c_mean = clean[metric].mean()
     c_lo, c_hi = boot_ci(clean[metric], rng)
     ax.axhspan(c_lo, c_hi, color="#f0f0ee", zorder=0)
-    ax.axhline(c_mean, color=MUTED, lw=0.8, zorder=1)
+    ax.axhline(c_mean, color=MUTED, lw=1.0, zorder=1)
     for i, (k, ls, label, color, style, marker, ticks) in enumerate(KINDS):
         off = (i - 1) * 0.13
         ys, los, his = [c_mean], [c_lo], [c_hi]
@@ -68,8 +69,8 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
             ys.append(v.mean()); los.append(lo); his.append(hi)
         xs = np.arange(4) + off
         ax.errorbar(xs[1:], ys[1:], yerr=[np.array(ys[1:]) - los[1:], np.array(his[1:]) - ys[1:]],
-                    fmt="none", ecolor=color, elinewidth=0.7, capsize=1.5, zorder=2)
-        ax.plot(xs, ys, color=color, ls=style, lw=1.1, marker=marker, ms=3.6,
+                    fmt="none", ecolor=color, elinewidth=1.0, capsize=1.8, zorder=2)
+        ax.plot(xs, ys, color=color, ls=style, lw=1.5, marker=marker, ms=4.0,
                 mec="white", mew=0.5, label=label, zorder=3)
     ax.set_xticks(range(4), ["원본", "1", "2", "3"])
     ax.set_xlabel("열화 단계", fontsize=6.8, labelpad=1.5)
@@ -87,18 +88,18 @@ for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("whe
             data.append((runs[(k, l)][metric] - clean[metric]).to_numpy())
             colors.append(color); xt.append(str(ls.index(l) + 1))
     pos = np.arange(len(data)) + np.repeat([0, 0.5, 1.0], 3)
-    ax.axhline(0, color=MUTED, lw=0.8)
+    ax.axhline(0, color=MUTED, lw=1.0)
     bp = ax.boxplot(data, positions=pos, widths=0.6, whis=(5, 95), showfliers=False,
-                    patch_artist=True, medianprops=dict(color=INK, lw=0.9))
+                    patch_artist=True, medianprops=dict(color=INK, lw=1.1))
     for patch, c in zip(bp["boxes"], colors):
-        patch.set(facecolor=c, alpha=0.35, edgecolor=c, lw=0.7)
+        patch.set(facecolor=c, alpha=0.4, edgecolor=c, lw=0.9)
     for part in ("whiskers", "caps"):
         for j, line in enumerate(bp[part]):
-            line.set(color=colors[j // 2], lw=0.7)
+            line.set(color=colors[j // 2], lw=0.95)
     jr = np.random.default_rng(1)
     for p, d, c in zip(pos, data, colors):
-        ax.scatter(p + jr.uniform(-0.2, 0.2, len(d)), d, s=1.2, color=c, alpha=0.55, lw=0, zorder=3)
-        ax.scatter(p, d.mean(), s=7, marker="D", color="white", edgecolor=INK, lw=0.6, zorder=4)
+        ax.scatter(p + jr.uniform(-0.2, 0.2, len(d)), d, s=1.8, color=c, alpha=0.75, lw=0, zorder=3)
+        ax.scatter(p, d.mean(), s=9, marker="D", color="white", edgecolor=INK, lw=0.8, zorder=4)
     ax.set_xticks(pos, xt)
     ax.set_xlabel("열화 단계", fontsize=6.8, labelpad=1.5)
     ax.set_ylim(-1.05, 1.05)
