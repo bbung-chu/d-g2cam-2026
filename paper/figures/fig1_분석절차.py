@@ -17,7 +17,7 @@ _have = {f.name for f in font_manager.fontManager.ttflist}
 plt.rcParams["font.family"] = next((n for n in ("Malgun Gothic", "Apple SD Gothic Neo", "NanumGothic", "AppleGothic")
                                     if n in _have), "DejaVu Sans")
 
-W, H = 3.35, 3.68          # 한 단 폭 (inch), 실제 인쇄 크기
+W, H = 3.35, 3.27          # 한 단 폭 (inch), 실제 인쇄 크기
 INK, SUB = "#1a1a1a", "#333333"
 MISS = "#b23a2e"           # 미검출·무응답 경로
 FT, FS = 7.5, 6.8          # 제목, 설명 글자 크기 (pt)
@@ -51,7 +51,7 @@ def arrow(x1, y1, x2, y2, color=INK, label=None, lx=0.0):
 
 m = 0.05
 fw = W - 2 * m
-G = 0.11                   # 상자 사이 화살표 길이
+G = 0.085                  # 상자 사이 화살표 길이
 
 # ① 입력
 h1 = 0.28
@@ -60,16 +60,16 @@ box(m, y1, fw, h1, "① ACCIDENT 실제 CCTV 사고 영상 50개 (시드 0)", fc
 arrow(W / 2, y1, W / 2, y1 - G)
 
 # ② 열화
-h2 = 0.66
+h2 = 0.60
 y2 = y1 - G - h2
 rbox(m, y2, fw, h2, fc="#fdf3e7")
-ax.text(W / 2, y2 + h2 - 0.12, "② 열화 적용: 원본 + 3종 × 3단계 = 10조건",
+ax.text(W / 2, y2 + h2 - 0.10, "② 열화 적용: 원본 + 3종 × 3단계 = 10조건",
         ha="center", va="center", fontsize=FT, weight="bold")
 items = [("해상도 저하", "1/2, 1/4, 1/8"), ("H.264 압축", "CRF 37, 42, 47"), ("모션 블러", "6, 11, 17 px")]
 gap = 0.05
 cw = (fw - 2 * gap - 2 * 0.04) / 3
 for i, (a, b) in enumerate(items):
-    box(m + gap + i * (cw + 0.04), y2 + 0.05, cw, 0.36, a, b)
+    box(m + gap + i * (cw + 0.04), y2 + 0.04, cw, 0.33, a, b)
 arrow(W / 2, y2, W / 2, y2 - G)
 
 # ③ 모델
@@ -83,16 +83,16 @@ for x0 in (xl, xr):
     arrow(x0 + hw / 2, y3, x0 + hw / 2, y3 - G)
 
 # 과제
-h4 = 0.40
+h4 = 0.36
 y4 = y3 - G - h4
 box(xl, y4, hw, h4, "시점 판별", "0.5초 간격 프레임마다 질의")
 box(xr, y4, hw, h4, "조건부 위치 추정", "정답 프레임에 사고 지점 질의")
 
 # 분기: 왼쪽 = 응답 있음(검은 화살표), 오른쪽 = 응답 없음(빨간 상자)
-h5 = 0.40
-y5 = y4 - 0.17 - h5
-h6 = 0.40
-y6 = y5 - 0.17 - h6
+h5 = 0.36
+y5 = y4 - 0.13 - h5
+h6 = 0.36
+y6 = y5 - 0.13 - h6
 mw = hw * 0.64
 
 
@@ -110,7 +110,7 @@ branch(xl, "응답 없음: 미검출", "정답 시각÷2로 채점", "시간 유
 branch(xr, "점 없음: 무응답", "화면 중앙으로 채점", "공간 유사도 S", "2차원 가우시안")
 
 # ④ 비교
-h7 = 0.40
+h7 = 0.36
 y7 = y6 - G - h7
 for x0, dx in ((xl, -0.10), (xr, 0.10)):
     arrow(x0 + hw / 2, y6, W / 2 + dx, y7 + h7)

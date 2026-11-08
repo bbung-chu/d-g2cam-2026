@@ -49,7 +49,7 @@ plt.rcParams.update({"font.family": KFONT, "font.size": 7.0, "xtick.labelsize": 
                      "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
                      "axes.unicode_minus": False})
 # 논문에 들어가는 실제 크기(한 단 폭 3.35 in)로 그린다. HWP에는 100%로 넣는다.
-fig, axes = plt.subplots(2, 2, figsize=(3.35, 3.45), dpi=600,
+fig, axes = plt.subplots(2, 2, figsize=(3.35, 3.25), dpi=600,
                          gridspec_kw=dict(height_ratios=[1, 1.05], hspace=0.55, wspace=0.34))
 rng = np.random.default_rng(SEED)
 for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("where", "공간 유사도 S")]):
@@ -111,7 +111,7 @@ h, lab = axes[0, 0].get_legend_handles_labels()
 fig.legend(h, lab, loc="upper center", ncol=3, frameon=False, fontsize=7.0,
            bbox_to_anchor=(0.5, 1.01), handlelength=2.4, columnspacing=1.2)
 # 막대·띠·상자 설명은 그림 안이 아니라 HWP 캡션에 쓴다 (글자를 키우기 위해).
-fig.subplots_adjust(left=0.115, right=0.985, top=0.905, bottom=0.095)
+fig.subplots_adjust(left=0.115, right=0.985, top=0.905, bottom=0.105)
 fig.savefig(FIG, dpi=600)
 
 # ---------- 미검출 영향 표 ----------
