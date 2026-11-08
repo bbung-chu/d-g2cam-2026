@@ -1,6 +1,6 @@
 """50개 표본 특성과 전체 2,027개 비교 (이슈 #2, 지적 9·11)
 
-출력: results_n50/표본_특성.md
+출력: ../4_분석결과/표본_특성.md (../2_원자료의 metadata-real.csv, molmo_clean.csv를 읽음)
 범주형(사고 유형, 장면, 낮/밤, 날씨, 화질, 해상도 구간)은 비율 비교 + 카이제곱 적합도 검정,
 연속형(영상 길이, 사고 시점)은 중앙값·사분위 비교 + Mann-Whitney U 검정.
 실행: python make_sample_table.py
@@ -11,9 +11,10 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-RES = Path(__file__).resolve().parent / "results_n50"
-full = pd.read_csv(RES / "metadata-real.csv")
-paths = pd.read_csv(RES / "molmo_clean.csv")["path"]
+RAW = Path(__file__).resolve().parents[1] / "2_원자료"
+OUT = Path(__file__).resolve().parents[1] / "4_분석결과"
+full = pd.read_csv(RAW / "metadata-real.csv")
+paths = pd.read_csv(RAW / "molmo_clean.csv")["path"]
 samp = full[full.path.isin(paths)].copy()
 assert len(samp) == 50
 
@@ -59,5 +60,5 @@ for col, name in CONT:
 
 lines = lines[:4] + ["## 요약 (논문용)", "", "| 항목 | 비교 | 결과 |", "|---|---|---|"] + \
     [f"| {a} | {b} | {c} |" for a, b, c in summary] + [""] + lines[4:]
-(RES / "표본_특성.md").write_text("\n".join(lines), encoding="utf-8")
+(OUT / "표본_특성.md").write_text("\n".join(lines), encoding="utf-8")
 print("\n".join(lines[:14]))

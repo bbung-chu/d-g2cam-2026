@@ -331,10 +331,10 @@ def set_cells(R, para_hdr, want):
 
 
 def set_table4(R, para_hdr):
-    """표 4의 점수·차이·RPD·CI 칸을 results_n50/table4_compact.md 값으로 다시 쓴다 (원본 HWP의 옛 값 대체)."""
+    """표 4의 점수·차이·RPD·CI 칸을 accident-pilot/4_분석결과/table4_compact.md 값으로 다시 쓴다 (원본 HWP의 옛 값 대체)."""
     fix = lambda s: s.replace('-', '−')  # noqa: E731
     rows = [[x.strip() for x in line.strip('|').split('|')]
-            for line in (REPO / "accident-pilot" / "results_n50" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]]
+            for line in (REPO / "accident-pilot" / "4_분석결과" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]]
     assert len(rows) == 9
     split = lambda s: [fix(s.split(' [')[0]), fix('[' + s.split(' [')[1])]  # noqa: E731  "4.9 [-2.4, 14.6]"
     want = {1: [[rows[0][2]], ['–'], [rows[0][6]], ['–']]}
@@ -356,7 +356,7 @@ def set_table4(R, para_hdr):
 
 def table4_diffs():
     rows = []
-    for line in (REPO / "accident-pilot" / "results_n50" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]:
+    for line in (REPO / "accident-pilot" / "4_분석결과" / "table4_compact.md").read_text(encoding="utf-8").splitlines()[2:]:
         c = [x.strip() for x in line.strip('|').split('|')]
         fix = lambda s: s.replace('-', '−')  # noqa: E731
         rows.append((fix(c[4]), fix(c[8])))

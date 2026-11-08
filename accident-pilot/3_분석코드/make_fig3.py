@@ -1,8 +1,8 @@
 """그림 3 열화 단계별 성능 변화 + 미검출 영향 (이슈 #1, 지적 29·30·33·37, T5·T7)
 
 출력
-  ../paper/figures/fig3_성능변화.png   (a)(b) 평균 ± 95% CI, (c)(d) 영상별 점수 변화 분포
-  results_n50/미검출_영향.md            조건별 미검출 비율, 처리 방식별 T 평균, 영상별 증감 수
+  ../4_분석결과/fig3_성능변화.png      (a)(b) 평균 ± 95% CI, (c)(d) 영상별 점수 변화 분포
+  ../4_분석결과/미검출_영향.md            조건별 미검출 비율, 처리 방식별 T 평균, 영상별 증감 수
 
 CI는 영상 50개를 복원 추출한 부트스트랩 2,000회(seed 0)의 2.5·97.5 백분위.
 실행: python make_fig3.py
@@ -16,9 +16,17 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-RES = HERE / "results_n50"
-FIG = HERE.parent / "paper" / "figures" / "fig3_성능변화.png"
+RES = HERE.parent / "2_원자료"
+OUT = HERE.parent / "4_분석결과"
+FIG = OUT / "fig3_성능변화.png"
 N_BOOT, SEED = 2000, 0
+
+def copy_to_paper(path):
+    """저장소 안에서 실행하면 논문 HWP 빌드가 읽는 paper/figures/에도 복사한다 (제출 zip에서는 건너뜀)."""
+    dst = Path(__file__).resolve().parents[2] / "paper" / "figures"
+    if dst.is_dir():
+        __import__("shutil").copy(path, dst / Path(path).name)
+
 
 # 열화 종류: 이름, 단계, 색(검증한 categorical 1~3번), 선 모양, 마커
 KINDS = [("resize", ["2", "4", "8"], "해상도 저하", "#2a78d6", "-", "o", ["1/2", "1/4", "1/8"]),
@@ -114,6 +122,7 @@ fig.legend(h, lab, loc="upper center", ncol=3, frameon=False, fontsize=7.0,
 # 막대·띠·상자 설명은 그림 안이 아니라 HWP 캡션에 쓴다 (글자를 키우기 위해).
 fig.subplots_adjust(left=0.115, right=0.985, top=0.905, bottom=0.105)
 fig.savefig(FIG, dpi=600)
+copy_to_paper(FIG)
 
 # ---------- 미검출 영향 표 ----------
 rows = []
@@ -144,7 +153,7 @@ def md(df):
     return "\n".join(out)
 
 
-(RES / "미검출_영향.md").write_text(
+(OUT / "미검출_영향.md").write_text(
     "# 미검출 영향과 영상별 점수 변화 (make_fig3.py 생성)\n\n"
     "## 1. 조건별 미검출과 처리 방식에 따른 시점 점수 T\n\n"
     "- **T 공식(대체값)**: 논문 값. 미검출 영상은 ACCIDENT 공식 코드대로 예측 시각을 `정답 시각÷2`로 채워 채점\n"

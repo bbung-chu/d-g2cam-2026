@@ -2,9 +2,9 @@
 """
 조건별 결과 CSV(pilot_when_where.py 출력)를 모아 논문용 표·그림을 만든다.
 
-    python analyze_results.py --results results/pilot
+    python analyze_results.py          # 기본: ../2_원자료 읽고 ../4_분석결과에 저장
 
-출력 (같은 폴더):
+출력:
   summary.csv / summary.md : 조건별 평균 점수, 원본 대비 하락률(RPD)과 95% 부트스트랩 신뢰구간
   degradation_curve.png    : 열화 단계별 성능 그래프 (When, Where)
 
@@ -46,7 +46,9 @@ def bootstrap(clean, deg, n_boot, rng):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--results", type=Path, required=True)
+    base = Path(__file__).resolve().parents[1]
+    p.add_argument("--results", type=Path, default=base / "2_원자료", help="molmo_*.csv 폴더")
+    p.add_argument("--out", type=Path, default=base / "4_분석결과")
     p.add_argument("--n-boot", type=int, default=2000)
     p.add_argument("--seed", type=int, default=0)
     args = p.parse_args()
@@ -75,7 +77,8 @@ def main():
         rows.append(row)
 
     df = pd.DataFrame(rows)
-    df.to_csv(args.results / "summary.csv", index=False)
+    args.out.mkdir(parents=True, exist_ok=True)
+    df.to_csv(args.out / "summary.csv", index=False)
 
     lines = ["| 열화 | 단계 | n | When σt=1 | When 하락률 % [95% CI] | Where | Where 하락률 % [95% CI] |",
              "|---|---|---|---|---|---|---|"]
@@ -88,10 +91,10 @@ def main():
         get = lambda m: f"{r[m]:.3f}" if m in r and not pd.isna(r[m]) else "-"  # noqa: E731
         lines.append(f"| {r['degradation']} | {r['level']} | {r['n']} | {get('when_s1.0')} | "
                      f"{cell('when_s1.0')} | {get('where')} | {cell('where')} |")
-    (args.results / "summary.md").write_text("\n".join(lines) + "\n")
+    (args.out / "summary.md").write_text("\n".join(lines) + "\n")
     print("\n".join(lines))
 
-    plot(df, args.results / "degradation_curve.png")
+    plot(df, args.out / "degradation_curve.png")
 
 
 def plot(df, path):

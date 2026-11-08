@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 """그림 2: 같은 정답 사고 프레임에 10개 조건(원본 + 열화 9개)을 적용한 비교 (이슈 #3, 지적 35·36·38).
 
-- 열화는 accident-pilot/pilot_when_where.py 의 degrade(), h264_video() 소스를 그대로 읽어 실행한다
+- 열화는 ../1_실험코드/pilot_when_where.py 의 degrade(), h264_video() 소스를 그대로 읽어 실행한다
   (논문 실험과 같은 코드. 모듈을 import하면 ACCIDENT 저장소의 dataset 패키지가 필요해서 함수만 꺼내 쓴다).
-- 정답 위치: metadata-real.csv 의 x1, y1, x2, y2 (초록 상자)
-- 모델 예측: results_n50/molmo_<조건>.csv 의 pred_x, pred_y (빨간 ×). 모델은 다시 돌리지 않는다.
+- 정답 위치: ../2_원자료/metadata-real.csv 의 x1, y1, x2, y2 (초록 상자)
+- 모델 예측: ../2_원자료/molmo_<조건>.csv 의 pred_x, pred_y (빨간 ×). 모델은 다시 돌리지 않는다.
 - 사고 영역이 작아서 정답 상자 중심으로 프레임 일부를 잘라 보여준다 (--crop: 프레임 너비 대비 비율).
 
-영상 mp4는 저장소에 넣지 않는다 (저작권·용량). 기본 경로는 저장소 밖 ../사례영상/real_videos/.
+영상 mp4는 넣지 않는다 (저작권·용량). Kaggle picekl/accident의 real_videos/BwSlVnQTtNo_00.mp4를 받아 --video-dir로 지정한다.
+번호판 3곳은 기본값 --blur-regions로 흐림 처리한다 (지적 38).
 
-실행 (저장소 루트에서):
-    python paper/figures/fig2_열화비교.py --video BwSlVnQTtNo_00
+실행:
+    python make_fig2.py --video-dir <real_videos 폴더>     → ../4_분석결과/fig2_열화비교_단폭.png
 필요: opencv-python, numpy, pandas, pillow, matplotlib, ffmpeg(libx264). ffmpeg가 PATH에 없으면 --ffmpeg로 경로 지정.
 """
 import argparse
@@ -31,9 +32,11 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib import font_manager  # noqa: E402
 from matplotlib.patches import Rectangle  # noqa: E402
 
-REPO = Path(__file__).resolve().parents[2]
-PILOT = REPO / "accident-pilot" / "pilot_when_where.py"
-RESULTS = REPO / "accident-pilot" / "results_n50"
+BASE = Path(__file__).resolve().parents[1]          # accident-pilot (제출 zip의 최상위 폴더)
+REPO = BASE.parent
+PILOT = BASE / "1_실험코드" / "pilot_when_where.py"
+RESULTS = BASE / "2_원자료"
+PLATES = "0.473,0.255,0.488,0.271;0.487,0.330,0.502,0.346;0.591,0.151,0.603,0.166"  # 번호판 위치 (정규화 좌표)
 
 CONDS = [("clean", "0", "원본"),
          ("resize", "2", "해상도 1/2"), ("resize", "4", "해상도 1/4"), ("resize", "8", "해상도 1/8"),
@@ -78,10 +81,10 @@ def main():
     ap.add_argument("--meta", type=Path, default=RESULTS / "metadata-real.csv")
     ap.add_argument("--crop", type=float, default=0.36, help="잘라 보여줄 너비 (프레임 너비 대비)")
     ap.add_argument("--ffmpeg", default=None, help="ffmpeg 실행 파일 경로 (PATH에 없을 때)")
-    ap.add_argument("--blur-regions", default="", help="비식별화: 'x1,y1,x2,y2;...' (정규화 좌표, 원본 프레임 기준)")
-    ap.add_argument("--out", type=Path, default=REPO / "paper" / "figures" / "fig2_열화비교.png")
+    ap.add_argument("--blur-regions", default=PLATES, help="비식별화: 'x1,y1,x2,y2;...' (정규화 좌표, 원본 프레임 기준)")
+    ap.add_argument("--out", type=Path, default=BASE / "4_분석결과" / "fig2_열화비교_단폭.png")
     ap.add_argument("--dpi", type=int, default=600)
-    ap.add_argument("--layout", choices=["wide", "column"], default="wide",
+    ap.add_argument("--layout", choices=["wide", "column"], default="column",
                     help="wide: 2×5 (두 단 폭), column: 3×4 (한 단 폭, 행=열화 종류)")
     args = ap.parse_args()
 
@@ -162,6 +165,9 @@ def main():
         fig.subplots_adjust(left=0.005, right=0.995, top=0.93, bottom=0.01, wspace=0.03, hspace=0.16)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(args.out, dpi=args.dpi)
+    dst = REPO / "paper" / "figures"
+    if dst.is_dir() and args.layout == "column":     # 저장소 안이면 HWP 빌드용 폴더에도 복사
+        __import__("shutil").copy(args.out, dst / args.out.name)
     print(f"saved {args.out}  frame={fr}  size={W}x{H}  crop=({x0:.0f},{y0:.0f},{cw:.0f}x{ch:.0f})")
     for (kind, level, name), (px, py, s) in zip(CONDS, preds):
         print(f"  {name:14s} pred=({px:.3f},{py:.3f}) S={s:.3f}")
