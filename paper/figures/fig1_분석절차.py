@@ -19,7 +19,7 @@ _have = {f.name for f in font_manager.fontManager.ttflist}
 plt.rcParams["font.family"] = next((n for n in ("Malgun Gothic", "Apple SD Gothic Neo", "NanumGothic", "AppleGothic")
                                     if n in _have), "DejaVu Sans")
 
-W, H = 3.35, 3.15            # 한 단 폭 (inch), 실제 인쇄 크기
+W, H = 3.35, 3.07            # 한 단 폭 (inch), 실제 인쇄 크기
 INK = "#000000"
 MISS = "#b0261c"             # 미검출·무응답 경로
 FT, FS = 7.6, 7.0            # 제목, 설명 글자 크기 (pt)
@@ -53,7 +53,7 @@ def down(x, y_top, y_bot, color=INK):
 
 m = 0.05
 fw = W - 2 * m
-G = 0.08                     # 상자 사이 화살표 길이 (모두 같게)
+G = 0.07                     # 상자 사이 화살표 길이 (모두 같게)
 
 # ① 입력
 h1 = 0.27
@@ -62,7 +62,7 @@ box(m, y1, fw, h1, "① ACCIDENT 실제 CCTV 사고 영상 50개 (시드 0)", fc
 down(W / 2, y1, y1 - G)
 
 # ② 열화
-h2 = 0.60
+h2 = 0.58
 y2 = y1 - G - h2
 rbox(m, y2, fw, h2, fc="#fdf1e2")
 ax.text(W / 2, y2 + h2 - 0.10, "② 열화 적용: 원본 + 3종 × 3단계 = 10조건",
@@ -91,7 +91,7 @@ box(cols[0], y4, hw, h4, "시점 판별", "0.5초 간격 프레임마다 질의"
 box(cols[1], y4, hw, h4, "조건부 위치 추정", "정답 프레임에 사고 지점 질의")
 
 # 분기: 왼쪽 검은 화살표(응답 있음) ↓, 오른쪽 빨간 상자(응답 없음) ↓ ↓  — 두 열 모두 같은 배치
-h5, gb = 0.36, 0.09
+h5, gb = 0.36, 0.08
 y5 = y4 - gb - h5
 h6 = 0.36
 y6 = y5 - gb - h6
