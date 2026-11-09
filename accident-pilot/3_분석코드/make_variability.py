@@ -5,6 +5,8 @@
 2. 영상 집중도: 시점 점수 T가 0.1 이상 바뀐 (영상, 조건) 이 몇 개 영상에 몰리는지
 3. 영상 특성: 6개 특성(사고 유형, 장면, 낮/밤, 날씨, 화질, 해상도)별로 점수 변화(열화 − 원본)가 다른지
    Kruskal-Wallis 검정, 9개 조건 × 2개 점수(T, S) × 6개 특성 = 108개 검정
+4. 다중 비교: 18개 RPD 비교(9개 조건 × T·S)에 본페로니 보정을 하면 결론이 바뀌는지
+   짝지은 부트스트랩 200,000회(seed 0), 보정 구간 = (1 − 0.05/18) 백분위 구간
 출력: ../4_분석결과/점수변화_원인.md
 실행: python make_variability.py
 """
@@ -68,6 +70,26 @@ lines += ["## 3. 영상 특성별 점수 변화 차이 (Kruskal-Wallis)", "",
           f"- p < 0.05: {n_sig}개 (우연으로 기대되는 수 약 {len(res) * 0.05:.1f}개)", "",
           "| 조건 | 점수 | 특성 | p |", "|---|---|---|---|"]
 lines += [f"| {r.조건} | {r.점수} | {r.특성} | {r.p} |" for r in res[res.p < 0.05].itertuples()]
+lines.append("")
+# 4. 다중 비교 (본페로니)
+B, ALPHA = 200_000, 0.05 / 18
+rng = np.random.default_rng(0)
+idx = rng.integers(0, len(clean), size=(B, len(clean)))
+mc = []
+for t in TAGS:
+    for metric, nm in [("when_s1.0", "T"), ("where", "S")]:
+        x, y = clean[metric].to_numpy(), runs[t][metric].to_numpy()
+        r = (x[idx].mean(1) - y[idx].mean(1)) / x[idx].mean(1) * 100
+        lo, hi = np.percentile(r, [2.5, 97.5])
+        blo, bhi = np.percentile(r, [ALPHA / 2 * 100, 100 - ALPHA / 2 * 100])
+        mc.append({"조건": t, "점수": nm, "RPD": round((x.mean() - y.mean()) / x.mean() * 100, 1),
+                   "95% CI": f"[{lo:.1f}, {hi:.1f}]", "본페로니 CI": f"[{blo:.2f}, {bhi:.1f}]",
+                   "0 제외(보정 전)": lo > 0 or hi < 0, "0 제외(보정 후)": blo > 0 or bhi < 0})
+mc = pd.DataFrame(mc)
+lines += ["## 4. 다중 비교 보정 (본페로니, 18개 비교)", "",
+          f"- 보정 전 0을 포함하지 않는 비교: {int(mc['0 제외(보정 전)'].sum())}개, 보정 후: {int(mc['0 제외(보정 후)'].sum())}개", "",
+          "| 조건 | 점수 | RPD % | 95% CI | 본페로니 CI |", "|---|---|---|---|---|"]
+lines += [f"| {r.조건} | {r.점수} | {r.RPD} | {r._4} | {r._5} |" for r in mc.itertuples()]
 lines.append("")
 (OUT / "점수변화_원인.md").write_text("\n".join(lines), encoding="utf-8")
 print("\n".join(lines))

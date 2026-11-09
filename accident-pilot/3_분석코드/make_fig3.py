@@ -58,7 +58,7 @@ plt.rcParams.update({"font.family": KFONT, "font.size": 7.0, "font.weight": "med
                      "axes.labelcolor": INK, "xtick.color": MUTED, "ytick.color": MUTED,
                      "axes.unicode_minus": False})
 # 논문에 들어가는 실제 크기(한 단 폭 3.35 in)로 그린다. HWP에는 100%로 넣는다.
-fig, axes = plt.subplots(2, 2, figsize=(3.35, 2.95), dpi=600,
+fig, axes = plt.subplots(2, 2, figsize=(3.35, 2.85), dpi=600,
                          gridspec_kw=dict(height_ratios=[1, 1.05], hspace=0.55, wspace=0.34))
 rng = np.random.default_rng(SEED)
 for col, (metric, name) in enumerate([("when_s1.0", "시간 유사도 T"), ("where", "공간 유사도 S")]):
