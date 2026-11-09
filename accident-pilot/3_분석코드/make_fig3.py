@@ -145,6 +145,17 @@ for k, ls, *_ in KINDS:
                         "0.1 이상 하락": int((d <= -0.1).sum()), "변화 0.1 미만": int((d.abs() < 0.1).sum())})
 chg_tab = pd.DataFrame(chg)
 
+# 위치 무응답: 점을 하나로 제시하지 않아(점 없음 또는 여러 점) 화면 중앙(0.5, 0.5)으로 채점된 영상
+nr = []
+for tag, df in [("원본", clean)] + [(f"{k} {l}", runs[(k, l)]) for k, ls, *_ in KINDS for l in ls]:
+    center = (df["pred_x"] == 0.5) & (df["pred_y"] == 0.5)
+    multi = center & df["where_raw"].astype(str).str.contains("<points")
+    s = df["where"]
+    nr.append({"조건": tag, "중앙 채점 수": int(center.sum()), "그중 여러 점": int(multi.sum()),
+               "중앙 채점 영상 평균 S": round(s[center].mean(), 3) if center.any() else "-",
+               "S 전체": round(s.mean(), 3), "S 점 응답만": round(s[~center].mean(), 3)})
+nr_tab = pd.DataFrame(nr)
+
 
 def md(df):
     cols = list(df.columns)
@@ -156,14 +167,20 @@ def md(df):
 (OUT / "미검출_영향.md").write_text(
     "# 미검출 영향과 영상별 점수 변화 (make_fig3.py 생성)\n\n"
     "## 1. 조건별 미검출과 처리 방식에 따른 시점 점수 T\n\n"
-    "- **T 공식(대체값)**: 논문 값. 미검출 영상은 ACCIDENT 공식 코드대로 예측 시각을 `정답 시각÷2`로 채워 채점\n"
+    "- **T 공식(대체값)**: 논문 값. 미검출 영상은 ACCIDENT 공식 코드대로 예측 시각을 `정답 시각 // 2`(2로 나눈 몫, 소수점 이하 버림)로 채워 채점\n"
     "- **T 미검출=0**: 미검출 영상을 오답(0점)으로 처리했을 때\n"
     "- **T 미검출 제외**: 미검출 영상을 빼고 평균\n"
     "- **대체값 기여**: 대체값으로 받은 점수가 평균 T에 더한 양 (= 공식 − 미검출=0)\n\n"
     + md(miss_tab) +
-    "\n\n## 2. 영상별 점수 변화 (열화 − 원본, 50개 중 영상 수)\n\n" + md(chg_tab) + "\n",
+    "\n\n## 2. 영상별 점수 변화 (열화 − 원본, 50개 중 영상 수)\n\n" + md(chg_tab) +
+    "\n\n## 3. 위치 무응답 (화면 중앙으로 채점된 영상)\n\n"
+    "- 공식 코드는 점 하나를 읽지 못하면(점 없음 또는 여러 점) 화면 중앙(0.5, 0.5)을 예측 위치로 채점한다.\n"
+    "- 열화가 강한 조건일수록 중앙 채점이 줄어, 위치 점수 S의 변화에는 이 수의 변화가 함께 반영된다.\n\n"
+    + md(nr_tab) + "\n",
     encoding="utf-8")
 print(FIG)
 print(md(miss_tab))
 print()
 print(md(chg_tab))
+print()
+print(md(nr_tab))

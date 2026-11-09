@@ -96,13 +96,13 @@ y5 = y4 - gb - h5
 h6 = 0.36
 y6 = y5 - gb - h6
 xa = 0.17                                  # 검은 화살표 위치 (열 왼쪽에서)
-mx0 = 0.40                                 # 빨간 상자 시작 위치 (열 기준)
+mx0 = 0.42                                 # 빨간 상자 시작 위치 (열 기준)
 mw = hw - mx0
 
 
-def branch(x0, miss1, miss2, score, sub):
+def branch(x0, ok, miss1, miss2, score, sub):
     down(x0 + xa, y4, y6 + h6)
-    ax.text(x0 + xa + 0.035, y5 + h5 / 2, "있음", ha="left", va="center", fontsize=6.8, weight=SUBW)
+    ax.text(x0 + xa + 0.03, y5 + h5 / 2, ok, ha="left", va="center", fontsize=6.8, weight=SUBW, linespacing=1.1)
     mx = x0 + mx0
     box(mx, y5, mw, h5, miss1, miss2, fc="#fde9e7", ec=MISS, color=MISS, ft=7.0, fs=6.8)
     down(mx + mw / 2, y4, y5 + h5, color=MISS)
@@ -111,8 +111,8 @@ def branch(x0, miss1, miss2, score, sub):
     down(x0 + hw / 2, y6, y6 - G)          # ④로 곧게
 
 
-branch(cols[0], "응답 없음: 미검출", "정답 시각÷2로 채점", "시간 유사도 T", "가우시안, σt = 1초")
-branch(cols[1], "점 없음: 무응답", "화면 중앙으로 채점", "공간 유사도 S", "2차원 가우시안")
+branch(cols[0], "'예'\n있음", "모두 '아니오': 미검출", "정답 시각÷2의 정수 부분", "시간 유사도 T", "가우시안, σt = 1초")
+branch(cols[1], "점\n1개", "점 1개가 아님: 무응답", "화면 중앙으로 채점", "공간 유사도 S", "2차원 가우시안")
 
 # ④ 비교
 h7 = 0.36

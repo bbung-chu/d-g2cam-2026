@@ -27,7 +27,8 @@ ACCIDENT 벤치마크의 실제 CCTV 사고 영상 50개에 해상도 저하, H.
 | 3.1 표본 대표성 (p ≥ 0.12) | `4_분석결과/표본_특성.md` | `3_분석코드/make_sample_table.py` |
 | 표 3 원본 점수 (0.370, 0.656) | `4_분석결과/summary.csv`의 clean 행 | `3_분석코드/analyze_results.py` |
 | 표 4 조건별 점수·차이·RPD·95% CI | `4_분석결과/table4_compact.md` (`summary.csv`에서 생성) | `analyze_results.py` → `make_table4.py` |
-| 4.1 미검출 8개(16%), 0점 처리 시 0.341 | `4_분석결과/미검출_영향.md` | `3_분석코드/make_fig3.py` |
+| 4.1 미검출 8개(16%), 0점 처리 시 0.341 | `4_분석결과/미검출_영향.md` 1절 | `3_분석코드/make_fig3.py` |
+| 4.1·4.2 위치 무응답(화면 중앙 채점) 원본 10개, 조건별 0~9개 | `4_분석결과/미검출_영향.md` 3절 | `3_분석코드/make_fig3.py` |
 | 그림 2 같은 프레임의 조건별 비교 | `4_분석결과/fig2_열화비교_단폭.png` | `3_분석코드/make_fig2.py` (영상 파일 필요) |
 | 그림 3 평균·CI·영상별 변화 | `4_분석결과/fig3_성능변화.png` | `3_분석코드/make_fig3.py` |
 
@@ -52,7 +53,7 @@ ACCIDENT 벤치마크의 실제 CCTV 사고 영상 50개에 해상도 저하, H.
 | `MolmoReasoner` (모델 불러오기, 질의, 위치 응답 해석) | 공식 코드 그대로 | `reasoning/molmo.py`를 import하여 수정 없이 사용 |
 | 시점 질의 문장, 0.5초 간격 프레임 선택 | 공식 코드 그대로 | `reasoning/molmo.py`, `baselines/temporal/main.py`와 같음 |
 | `first_yes_frame()` | 공식 코드 수정 | 공식 코드는 모든 프레임에 질의한 뒤 첫 "yes"를 고름. 프레임마다 독립 질의이므로 첫 "yes"에서 멈춰도 예측은 같고 시간만 줄어듦 (`--full-scan`이면 공식처럼 끝까지 질의) |
-| 채점 (가우시안 유사도, 위치 σ = 전체 사고 상자 평균 크기, 미검출 시 정답 시각÷2 대체값, 점 없음 → 화면 중앙) | 공식 코드 옮김 | `baselines/temporal/analysis.ipynb`, `baselines/spatial/analysis.ipynb`의 채점 로직을 스크립트로 옮김 |
+| 채점 (가우시안 유사도, 위치 σ = 전체 사고 상자 평균 크기, 미검출 시 `정답 시각 // 2`(2로 나눈 몫) 대체값, 점을 하나로 읽지 못하면(점 없음 또는 여러 점) → 화면 중앙) | 공식 코드 옮김 | `baselines/temporal/analysis.ipynb`, `baselines/spatial/analysis.ipynb`의 채점 로직을 스크립트로 옮김 |
 | 유형 분류(What) 호출 | 삭제 | 시점·위치와 별도 질의라 빼도 두 점수는 같음 |
 | `degrade()` (해상도 축소·재확대, 수평 선형 모션 블러) | **직접 작성** | 공식 저장소에 없음 |
 | `h264_video()` (FFmpeg libx264 재인코딩, preset medium, yuv420p) | **직접 작성** | 공식 저장소에 없음 |
