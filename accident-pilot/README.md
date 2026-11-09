@@ -16,7 +16,7 @@ ACCIDENT 벤치마크의 실제 CCTV 사고 영상 50개에 해상도 저하, H.
 |---|---|
 | `1_실험코드/` | `pilot_when_where.py`: 모델 질의, 열화 적용, 채점. `colab/`: 이 스크립트를 Google Colab GPU에서 실행한 노트북 |
 | `2_원자료/` | 조건별 실험 결과 CSV 10개(원본 1 + 열화 9)와 ACCIDENT 정답 메타데이터 |
-| `3_분석코드/` | 원자료에서 논문의 표·그림을 만드는 스크립트 5개 (모델을 다시 돌리지 않음) |
+| `3_분석코드/` | 원자료에서 논문의 표·그림·수치를 만드는 스크립트 6개 (모델을 다시 돌리지 않음) |
 | `4_분석결과/` | `3_분석코드/` 실행 결과. 논문 표 3·4, 그림 2·3, 미검출 분석, 표본 특성의 출처 |
 | `5_이전결과_1102/` | 원본 조건 재실행(11/9) 전의 결과. 비교용으로 남김 ([6. 알려진 사항](#6-알려진-사항)) |
 
@@ -29,6 +29,7 @@ ACCIDENT 벤치마크의 실제 CCTV 사고 영상 50개에 해상도 저하, H.
 | 표 4 조건별 점수·차이·RPD·95% CI | `4_분석결과/table4_compact.md` (`summary.csv`에서 생성) | `analyze_results.py` → `make_table4.py` |
 | 4.1 미검출 8개(16%), 0점 처리 시 0.341 | `4_분석결과/미검출_영향.md` 1절 | `3_분석코드/make_fig3.py` |
 | 4.1·4.2 위치 무응답(화면 중앙 채점) 원본 10개, 조건별 0~9개 | `4_분석결과/미검출_영향.md` 3절 | `3_분석코드/make_fig3.py` |
+| 4.2 점수 변화 원인 (재실행 21개 동일, 34개 중 17개 집중, 108개 검정 중 4개) | `4_분석결과/점수변화_원인.md` | `3_분석코드/make_variability.py` |
 | 그림 2 같은 프레임의 조건별 비교 | `4_분석결과/fig2_열화비교_단폭.png` | `3_분석코드/make_fig2.py` (영상 파일 필요) |
 | 그림 3 평균·CI·영상별 변화 | `4_분석결과/fig3_성능변화.png` | `3_분석코드/make_fig3.py` |
 
@@ -69,6 +70,7 @@ python analyze_results.py      # → 4_분석결과/summary.csv, summary.md, deg
 python make_table4.py          # → 4_분석결과/table4_compact.md
 python make_fig3.py            # → 4_분석결과/fig3_성능변화.png, 미검출_영향.md
 python make_sample_table.py    # → 4_분석결과/표본_특성.md
+python make_variability.py     # → 4_분석결과/점수변화_원인.md
 # 그림 2는 영상 파일이 필요합니다 (아래)
 python make_fig2.py --video-dir <real_videos 폴더>   # → 4_분석결과/fig2_열화비교_단폭.png
 ```
